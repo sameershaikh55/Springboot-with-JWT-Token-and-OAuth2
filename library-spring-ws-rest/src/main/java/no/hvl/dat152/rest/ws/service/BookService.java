@@ -54,9 +54,12 @@ public class BookService {
 		Book existingBook = findByISBN(isbn);
 		
 		// 2. Update the mutable fields
-		existingBook.setTitle(book.getTitle());
-		existingBook.setAuthors(book.getAuthors());
-		
+		if (book.getTitle() != null) {
+			existingBook.setTitle(book.getTitle());
+		}
+		if (book.getAuthors() != null && !book.getAuthors().isEmpty()) {
+			existingBook.setAuthors(book.getAuthors());
+		}		
 		// 3. Save and return the updated entity
 		return bookRepository.save(existingBook);
 	}
@@ -85,6 +88,11 @@ public class BookService {
 	public void deleteByISBN(String isbn) throws BookNotFoundException {
 		// Find the book by its unique ISBN first, then remove it
 		Book book = findByISBN(isbn);
+		
+		// Clear many-to-many references to avoid join table constraint errors
+		book.getAuthors().clear();
+		bookRepository.save(book);
+		
 		bookRepository.delete(book);
 	}
 }

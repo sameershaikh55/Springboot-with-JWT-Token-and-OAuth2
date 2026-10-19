@@ -70,18 +70,19 @@ public class BookController {
 	
 	// TODO - getAuthorsOfBookByISBN (@Mappings, URI, and method)
 	@GetMapping("/books/{isbn}/authors")
-	public ResponseEntity<Object> getAuthorsOfBookByISBN(@PathVariable String isbn) throws BookNotFoundException {
+	public ResponseEntity<Object> getAuthorsOfBookByISBN(@PathVariable("isbn") String isbn) throws BookNotFoundException {
 		Set<Author> authors = bookService.findAuthorsOfBookByISBN(isbn);
 		
-		if(authors.isEmpty())
+		if (authors == null || authors.isEmpty()) {
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-			
-		return new ResponseEntity<>(authors, HttpStatus.OK);
+		}
+		
+		return new ResponseEntity<>(new ArrayList<>(authors), HttpStatus.OK);
 	}
 	
 	// TODO - updateBookByISBN (@Mappings, URI, and method)
 	@PutMapping("/books/{isbn}")
-	public ResponseEntity<Object> updateBookByISBN(@PathVariable String isbn, @RequestBody Book book) throws BookNotFoundException {
+	public ResponseEntity<Object> updateBookByISBN(@PathVariable("isbn") String isbn, @RequestBody Book book) throws BookNotFoundException {
 		Book updatedBook = bookService.updateBook(book, isbn);
 		
 		return new ResponseEntity<>(updatedBook, HttpStatus.OK);
@@ -89,7 +90,7 @@ public class BookController {
 	
 	// TODO - deleteBookByISBN (@Mappings, URI, and method)
 	@DeleteMapping("/books/{isbn}")
-	public ResponseEntity<Object> deleteBookByISBN(@PathVariable String isbn) throws BookNotFoundException {
+	public ResponseEntity<Object> deleteBookByISBN(@PathVariable("isbn") String isbn) throws BookNotFoundException {
 		bookService.deleteByISBN(isbn);
 		
 		return new ResponseEntity<>(HttpStatus.OK);
