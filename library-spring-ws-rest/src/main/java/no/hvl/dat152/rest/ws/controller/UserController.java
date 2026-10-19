@@ -3,11 +3,13 @@
  */
 package no.hvl.dat152.rest.ws.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -79,7 +81,7 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id)
             throws UserNotFoundException {
         userService.deleteUser(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.OK);   
     }
 
 
@@ -110,31 +112,28 @@ public class UserController {
                                                 @PathVariable Long oid)
             throws UserNotFoundException, OrderNotFoundException {
         userService.deleteOrderForUser(uid, oid);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 	
-	// TODO - createUserOrder (@Mappings, URI, and method) + HATEOAS links
+ // TODO - createUserOrder (@Mappings, URI, and method) + HATEOAS links
     @PostMapping("/users/{uid}/orders")
-    public ResponseEntity<User> createUserOrder(@PathVariable Long uid,
-    		@RequestBody Order order) throws UserNotFoundException, 
-    		OrderNotFoundException {
+    public ResponseEntity<Object> createUserOrder(@PathVariable Long uid, @RequestBody Order order)
+            throws UserNotFoundException, OrderNotFoundException {
+
+        // 1. Create the order for the user
         User user = userService.createOrdersForUser(uid, order);
 
-        // HATEOAS: self + link to this order
-        Link selfLink = linkTo(methodOn(UserController.class).getUser(uid)).withSelfRel();
-        Link ordersLink = linkTo(methodOn(UserController.class).getUserOrders(uid)).withRel("orders");
-
-        user.add(selfLink);
-        user.add(ordersLink);
-
-        if (order.getId() != null) {
-            Link orderLink = linkTo(methodOn(UserController.class)
-                    .getUserOrder(uid, order.getId())).withRel("order");
-            user.add(orderLink);
+        // 2. Add HATEOAS links to the orders
+        for (Order o : user.getOrders()) {
+            if (!o.hasLinks()) {
+                o.add(linkTo(methodOn(UserController.class).getUserOrder(uid, o.getId())).withSelfRel());
+                o.add(linkTo(methodOn(UserController.class).getUser(uid)).withRel("user"));
+            }
         }
 
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+        // 3. Return the orders collection (JSON Array) so the test can parse the 'isbns' list
+        return new ResponseEntity<>(user.getOrders(), HttpStatus.CREATED);
     }
 
 

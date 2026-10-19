@@ -45,7 +45,7 @@ public class UserService {
 	// TODO public User saveUser(User user)
 	public User saveUser(User user) {
 		
-		return null;
+		return userRepository.save(user);
 	}
 	
 	// TODO public void deleteUser(Long id) throws UserNotFoundException 
