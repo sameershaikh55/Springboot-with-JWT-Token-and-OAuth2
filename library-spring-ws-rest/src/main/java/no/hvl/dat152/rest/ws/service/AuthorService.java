@@ -43,13 +43,14 @@ public class AuthorService {
 	
 	// TODO public Author updateAuthor(Author author, int id)
 	public Author updateAuthor(Author author, int id) throws AuthorNotFoundException {
-        Author existing = authorRepository.findById(id)
-                .orElseThrow(() -> new AuthorNotFoundException(
-                        "Cannot update. Author with id " + id + " not found"));
+		// 1. Fetch existing author to verify they exist
+        Author existing = findById(id);
 
+        // 2. Update their fields
         existing.setFirstname(author.getFirstname());
         existing.setLastname(author.getLastname());
 
+        // 3. Save and return
         return authorRepository.save(existing);
     }
 	
@@ -60,22 +61,14 @@ public class AuthorService {
 
 	
 	// TODO public void deleteById(int id) throws AuthorNotFoundException 
-	public void deleteAuthor(int id) throws AuthorNotFoundException {
-        Author existing = authorRepository.findById(id)
-                .orElseThrow(() -> new AuthorNotFoundException(
-                        "Cannot delete. Author with id " + id + " not found"));
-        
+	public void deleteById(int id) throws AuthorNotFoundException {
+        Author existing = findById(id);
         authorRepository.delete(existing);
     }
 	
 	// TODO public Set<Book> findBooksByAuthorId(int id)
-	public List<Book> findBooksByAuthorId(int id) throws AuthorNotFoundException {
-		authorRepository.findById(id)
-				.orElseThrow(() -> new AuthorNotFoundException
-						("Cannot find books. Author with id " + id + " not found"));
-		
-		List<Book> books = bookRepository.findBooksByAuthorId(id);
-		return books;
+	public Set<Book> findBooksByAuthorId(int id) throws AuthorNotFoundException {
+		Author author = findById(id);
+		return author.getBooks();
 	}
-	
 }
