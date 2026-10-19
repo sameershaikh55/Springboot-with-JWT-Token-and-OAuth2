@@ -13,6 +13,7 @@ import no.hvl.dat152.rest.ws.exceptions.AuthorNotFoundException;
 import no.hvl.dat152.rest.ws.model.Author;
 import no.hvl.dat152.rest.ws.model.Book;
 import no.hvl.dat152.rest.ws.repository.AuthorRepository;
+import no.hvl.dat152.rest.ws.repository.BookRepository;
 
 /**
  * @author tdoy
@@ -20,12 +21,54 @@ import no.hvl.dat152.rest.ws.repository.AuthorRepository;
 @Service
 public class AuthorService {
 
-	// TODO copy your solutions from previous tasks!
+	@Autowired
+	private AuthorRepository authorRepository;
+		
+	@Autowired
+	private BookRepository bookRepository;
 	
-	public Author findById(long id) {
+	public Author findById(int id) throws AuthorNotFoundException {
 		
-		// TODO
+		Author author = authorRepository.findById(id)
+				.orElseThrow(()-> new AuthorNotFoundException("Author with the id: "+id+ "not found!"));
 		
-		return null;
+		return author;
+	}
+	
+	// TODO public saveAuthor(Author author)
+	public Author saveAuthor(Author author) {
+		return authorRepository.save(author);
+	}
+		
+	
+	// TODO public Author updateAuthor(Author author, int id)
+	public Author updateAuthor(Author author, int id) throws AuthorNotFoundException {
+		// 1. Fetch existing author to verify they exist
+        Author existing = findById(id);
+
+        // 2. Update their fields
+        existing.setFirstname(author.getFirstname());
+        existing.setLastname(author.getLastname());
+
+        // 3. Save and return
+        return authorRepository.save(existing);
+    }
+	
+	// TODO public List<Author> findAll()
+	public List<Author> findAll() {
+        return (List<Author>) authorRepository.findAll();
+    }
+
+	
+	// TODO public void deleteById(int id) throws AuthorNotFoundException 
+	public void deleteById(int id) throws AuthorNotFoundException {
+        Author existing = findById(id);
+        authorRepository.delete(existing);
+    }
+	
+	// TODO public Set<Book> findBooksByAuthorId(int id)
+	public Set<Book> findBooksByAuthorId(int id) throws AuthorNotFoundException {
+		Author author = findById(id);
+		return author.getBooks();
 	}
 }
